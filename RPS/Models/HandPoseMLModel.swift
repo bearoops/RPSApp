@@ -1,9 +1,7 @@
 import Foundation
 import CoreML
 
-/*#-code-walkthrough(ml.model)*/
 final class HandPoseMLModel: NSObject, Identifiable {
-/*#-code-walkthrough(ml.model)*/
     let name: String
     let mlModel: MLModel
     let url: URL
@@ -18,18 +16,16 @@ final class HandPoseMLModel: NSObject, Identifiable {
         self.url = url
     }
 
-    /*#-code-walkthrough(ml.prediction)*/
     func predict(poses: HandPoseInput) throws -> HandPoseOutput? {
         let features = try mlModel.prediction(from: poses)
         let output = HandPoseOutput(features: features)
         return output
     }
-    /*#-code-walkthrough(ml.prediction)*/
 }
 
-/*#-code-walkthrough(ml.input)*/
+extension HandPoseMLModel: @unchecked Sendable {}
+
 class HandPoseInput {
-/*#-code-walkthrough(ml.input)*/
     var poses: MLMultiArray
     
     init(poses: MLMultiArray) {
@@ -37,20 +33,40 @@ class HandPoseInput {
     }
 }
 
-/*#-code-walkthrough(ml.output)*/
-class HandPoseOutput {
-/*#-code-walkthrough(ml.output)*/
+extension HandPoseInput: MLFeatureProvider {
+    var featureNames: Set<String> { ["poses"] }
+    
+    func featureValue(for featureName: String) -> MLFeatureValue? {
+        if featureName == "poses" {
+            return MLFeatureValue(multiArray: poses)
+        }
+        return nil
+    }
+}
+
+class HandPoseOutput: @unchecked Sendable {
     let provider : MLFeatureProvider
 
-    lazy var labelProbabilities: [String : Double] = { [unowned self] in
-        self.getOutputProbabilities()
-    }()
+    var labelProbabilities: [String: Double] {
+        let featureValue = provider.featureValue(for: "labelProbabilities")
+        return featureValue?.dictionaryValue as? [String : Double] ?? [:]
+    }
 
-    lazy var label: String = { [unowned self] in
-        self.getOutputLabel()
-    }()
+    var label: String {
+        provider.featureValue(for: "label")?.stringValue ?? ""
+    }
 
     init(features: MLFeatureProvider) {
         self.provider = features
+    }
+}
+
+extension HandPoseOutput: MLFeatureProvider {
+    var featureNames: Set<String> {
+        provider.featureNames
+    }
+    
+    func featureValue(for featureName: String) -> MLFeatureValue? {
+        provider.featureValue(for: featureName)
     }
 }

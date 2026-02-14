@@ -101,45 +101,35 @@ extension AppModel: MLDelegate {
 
     func gatherObservations(pixelBuffer: CVImageBuffer) async {
         guard canPredict else { return }
-        
         Task { @MainActor in
             canPredict = false
         }
-
         guard let mlModel = camera.currentMLModel else {
-            await resetPrediction()
+            resetPrediction()
             return
         }
-        
         Task {
             let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up)
             do {
                 try imageRequestHandler.perform([camera.handPoseRequest])
-                guard/*#-code-walkthrough(ml.observation)*/ let observation = camera.handPoseRequest.results?.first /*#-code-walkthrough(ml.observation)*/else {
-                    await resetPrediction()
+                guard let observation = camera.handPoseRequest.results?.first else {
+                    resetPrediction()
                     return
                 }
-
                 Task { @MainActor in
                     isHandInFrame = true
                     isGatheringObservations = true
                 }
-
-                /*#-code-walkthrough(ml.multiarray)*/
                 let poseMultiArray = try observation.keypointsMultiArray()
-                /*#-code-walkthrough(ml.multiarray)*/
-                
                 let input = HandPoseInput(poses: poseMultiArray)
                 guard let output = try mlModel.predict(poses: input) else { return }
-                await updatePredictions(output: output)
-
+                updatePredictions(output: output)
                 let jointPoints = try gatherHandPosePoints(from: observation)
-                await updateNodes(points: jointPoints)
+                updateNodes(points: jointPoints)
             } catch {
                 print("Error performing request: \(error)")
             }
         }
-        
     }
 
     private func gatherHandPosePoints(from observation: VNHumanHandPoseObservation) throws -> [CGPoint] {
@@ -179,4 +169,3 @@ fileprivate extension CIImage {
 }
 
 extension AppModel: @unchecked Sendable {}
-extension Image: @unchecked Sendable {}

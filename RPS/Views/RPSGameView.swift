@@ -1,12 +1,8 @@
 import SwiftUI
 
-/*#-code-walkthrough(gameView)*/
 struct RPSGameView: View {
-    /*#-code-walkthrough(gameView)*/
     @EnvironmentObject var appModel: AppModel
-    /*#-code-walkthrough(gameModel)*/
     @StateObject var gameModel: GameModel = GameModel()
-    /*#-code-walkthrough(gameModel)*/
 
     var isMLGame: Bool = false
 
@@ -37,7 +33,6 @@ struct RPSGameView: View {
             computersMoveView()
             labelView()
             yourMoveView()
-
             if !isMLGame {
                 playButton()
                     .modifier(GameLabelBackground())
@@ -96,7 +91,7 @@ struct RPSGameView: View {
                     .onChange(of: gameResultText) { _ in
                         guard !gameResultText.isEmpty else { return }
                         Task {
-                            await Task.sleep(seconds: 1.5)
+                            await Task.sleep(seconds: 2)
                             gameResultText = ""
                         }
                     }

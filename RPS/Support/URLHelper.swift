@@ -27,10 +27,10 @@ extension URL {
         return datasetDirectory?.appendingPathComponent("Validation", isDirectory: true)
     }
     
-    static var resourceDirectory: URL? = Bundle.main.resourceURL
+    static var resourceDirectory: URL? = Bundle.main.bundleURL
     
     static var defaultMLModel: URL? {
-        return resourceDirectory?.appendingPathComponent("rockpaperscissors.mlmodel")
+        return resourceDirectory?.appendingPathComponent("rockpaperscissors.mlmodelc")
     }
     
     var subDirectories: [URL] {

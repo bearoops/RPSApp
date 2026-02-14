@@ -3,7 +3,6 @@ import CoreML
 import CreateML
 import Combine
 
-
 extension HandPoseTrainer {
     typealias TrainingSession = MLJob<MLHandPoseClassifier>
 
@@ -82,8 +81,8 @@ extension HandPoseTrainer {
 
 extension HandPoseMLModel {
     static func loadMLModel(from url: URL, as name: String) async throws -> HandPoseMLModel? {
-        let compiledModelURL = try await MLModel.compileModel(at: url)
-        let model = try MLModel(contentsOf: compiledModelURL)
+//        let compiledModelURL = try await MLModel.compileModel(at: url)
+        let model = try MLModel(contentsOf: url)
         return HandPoseMLModel(name: name, mlModel: model, url: url)
     }
 
@@ -124,42 +123,3 @@ extension HandPoseMLModel {
         return handposeMLModel
     }
 }
-
-extension HandPoseInput: MLFeatureProvider {
-    var featureNames: Set<String> {
-        get {
-            return ["poses"]
-        }
-    }
-    
-    func featureValue(for featureName: String) -> MLFeatureValue? {
-        if featureName == "poses" {
-            return MLFeatureValue(multiArray: poses)
-        }
-        return nil
-    }
-    
-}
-
-extension HandPoseOutput: MLFeatureProvider {
-    var featureNames: Set<String> {
-        return self.provider.featureNames
-    }
-    
-    func featureValue(for featureName: String) -> MLFeatureValue? {
-        return self.provider.featureValue(for: featureName)
-    }
-}
-
-extension HandPoseOutput {
-    func getOutputProbabilities() -> [String : Double] {
-        return self.provider.featureValue(for: "labelProbabilities")?.dictionaryValue as? [String : Double] ?? [:]
-    }
-    
-    func getOutputLabel() -> String {
-        return self.provider.featureValue(for: "label")?.stringValue ?? ""
-    }
-}
-
-extension HandPoseMLModel: @unchecked Sendable {}
-extension HandPoseOutput: @unchecked Sendable {}

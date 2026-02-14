@@ -6,7 +6,6 @@ struct RPSApp: App {
 
     var body: some Scene {
         WindowGroup {
-            /*#-code-walkthrough(mlgameview.replace)*/
             MLGameView()
                 .environmentObject(appModel)
         }

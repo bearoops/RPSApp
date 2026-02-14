@@ -5,23 +5,19 @@ struct CameraView: View {
     var showNodes: Bool = false
 
     private var showWarning: Bool {
-        appModel.viewfinderImage != nil && appModel.currentMLModel != nil && !appModel.isHandInFrame
-    }
-
-    private var previewImageSize: CGSize {
-        appModel.camera.previewImageSize
-    }
-
-    private var handJointPoints: [CGPoint] {
-        appModel.nodePoints
+        appModel.viewfinderImage != nil &&
+        appModel.currentMLModel != nil &&
+        !appModel.isHandInFrame
     }
 
     var body: some View {
         ViewfinderView(image: $appModel.viewfinderImage)
             .overlay(alignment: .center)  {
                 if showNodes {
-                    HandPoseNodeOverlay(size: previewImageSize,
-                                        points: handJointPoints)
+                    HandPoseNodeOverlay(
+                        size: appModel.camera.previewImageSize,
+                        points: appModel.nodePoints
+                    )
                 }
             }
             .overlay(alignment: .center) {
